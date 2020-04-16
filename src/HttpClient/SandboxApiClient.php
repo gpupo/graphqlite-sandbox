@@ -12,7 +12,7 @@ namespace App\HttpClient;
 
 use Gpupo\PackSymfonyCommon\HttpClient\AbstractApiClient;
 
-class MundipaggApiClient extends AbstractApiClient
+class SandboxApiClient extends AbstractApiClient
 {
     protected function factoryRequestOptions(): array
     {

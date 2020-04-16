@@ -1,0 +1,64 @@
+parameters:
+    env(SANDBOX_API_ENDPOINT): https://url/api/version
+    env(SANDBOX_API_SECRET_KEY): secret_key_from_dashboard
+    sandboxConfig:
+        endpoint: '%env(resolve:SANDBOX_API_ENDPOINT)%'
+        secretKey: '%env(resolve:SANDBOX_API_SECRET_KEY)%'
+
+services:
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    App\:
+        resource: '../src/*'
+        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+    App\Controller\:
+        resource: '../src/Controller'
+        tags: ['controller.service_arguments']
+
+    App\Service\:
+        resource: '../src/Service'
+        public: true
+
+    Gpupo\PackSymfonyCommon\HttpClient\ApiClientInterface:
+        class: 'App\HttpClient\SandboxApiClient'
+        arguments:
+            - '%sandboxConfig%'
+            - '@Gpupo\PackSymfonyCommon\HttpClient\HttpClientInterface'
+        public: true
+    
+    App\Entity\User:
+        class: 'App\Entity\User'
+        public: true
+
+    Symfony\Component\HttpKernel\HttpCache\Store:
+        arguments: ['%kernel.cache_dir%/httpCache']
+
+        
+    Gpupo\PackSymfonyCommon\HttpClient\HttpClientInterface:
+        class: 'Gpupo\PackSymfonyCommon\HttpClient\CachingHttpClient'
+        arguments: 
+            - '@Symfony\Contracts\HttpClient\HttpClientInterface'
+            - '@Symfony\Component\HttpKernel\HttpCache\Store'
+            -
+                debug: true
+                default_ttl: 360
+
+    TheCodingMachine\Graphqlite\Bundle\Controller\GraphqliteController:
+        class: 'Gpupo\PackSymfonyCommon\Graphql\GraphqliteController'
+        tags: ['routing.route_loader']
+        arguments:
+            $httpMessageFactory: '@Gpupo\PackSymfonyCommon\HttpClient\MessageFactory'
+            $debug: true
+        public: true
+
+    Gpupo\PackSymfonyCommon\HttpClient\MessageFactory:
+        class: 'Gpupo\PackSymfonyCommon\HttpClient\MessageFactory'
+        arguments:
+            - '@Psr\Http\Message\ServerRequestFactoryInterface'
+            - '@Psr\Http\Message\StreamFactoryInterface'
+            - '@Psr\Http\Message\UploadedFileFactoryInterface'
+            - '@Psr\Http\Message\ResponseFactoryInterface'
+    
