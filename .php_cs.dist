@@ -5,7 +5,7 @@
 use Gpupo\CommonDevExtra\CsConfigurator;
 
 $packageInfo = [
-    'project' => 'gpupo/pack-symfony-common',
+    'project' => 'gpupo/graphqlite-sandbox',
     'author' => 'Gilmar Pupo <contact@gpupo.com>',
     'url' => 'https://opensource.gpupo.com/',
 ];
